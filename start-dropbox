@@ -1,0 +1,25 @@
+#!/bin/bash
+set -e
+DROPBOX_DIR=.dropbox-dist
+USER=dropbox
+DIR=/home/$USER
+DAEMON=$DIR/$DROPBOX_DIR/dropboxd
+
+getent passwd $USER || useradd $USER -m -d $DIR
+
+if [ ! -z "$USER_ID" ]; then
+  usermod -u $USER_ID $USER
+fi
+
+if [ ! -z "$USER_GID" ]; then
+  getent group $USER_GID || groupadd -g $USER_GID g_"$USER_GID"
+  usermod -g $USER_GID $USER
+fi
+
+
+if [ ! -x "$DAEMON" ]; then
+  wget -O - https://www.dropbox.com/download?plat=lnx.x86_64 | tar xz -C $DIR
+fi
+
+chown -R $USER.$USER $DIR
+exec su - $USER -c $DAEMON
